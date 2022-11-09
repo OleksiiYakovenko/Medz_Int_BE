@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from typing import List
-from models.models import Users
-from schemas.schemas import Users, UsersIn
-from database.database import database
+from app.models.models import Users
+from app.schemas.schemas import Users, UsersIn
+from app.database.db import database
 
 
 app = FastAPI()
