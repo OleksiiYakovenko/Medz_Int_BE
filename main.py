@@ -1,6 +1,37 @@
-import uvicorn
-from app.config import settings
+from fastapi import FastAPI
+from typing import List
+from models.models import Users
+from schemas.schemas import Users, UsersIn
+from database.database import database
 
 
-if __name__ == "__main__":
-    uvicorn.run("app.app:app", host=settings.SERVER_HOST, port=settings.PORT_SERVER)
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return {"Status": "Working"}
+
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
+
+@app.get("/Users/", response_model=List[Users])
+async def read_notes():
+    query = Users.select()
+    return await database.fetch_all(query)
+
+
+@app.post("/Users/", response_model=Users)
+async def create_note(Users: UsersIn):
+    query = Users.insert().values(text=Users.text, completed=Users.completed)
+    last_record_id = await database.execute(query)
+    return {**Users.dict(), "id": last_record_id}
+
