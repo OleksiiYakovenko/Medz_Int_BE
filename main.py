@@ -1,37 +1,24 @@
 from fastapi import FastAPI
-from typing import List
-from app.models.models import Users
-from app.schemas.schemas import Users, UsersIn
-from app.database.db import database
-
+import uvicorn
+from app.schemas.schemas import settings
+from starlette.middleware.cors import CORSMiddleware
+from app.routes.route import router
 
 app = FastAPI()
 
 
-@app.get("/")
-def read_root():
-    return {"Status": "Working"}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 
-@app.on_event("startup")
-async def startup():
-    await database.connect()
+app.include_router(router)
 
 
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
-
-
-@app.get("/Users/", response_model=List[Users])
-async def read_notes():
-    query = Users.select()
-    return await database.fetch_all(query)
-
-
-@app.post("/Users/", response_model=Users)
-async def create_note(Users: UsersIn):
-    query = Users.insert().values(text=Users.text, completed=Users.completed)
-    last_record_id = await database.execute(query)
-    return {**Users.dict(), "id": last_record_id}
+if __name__ == "__main__":
+    uvicorn.run("main:app", host=settings.SERVER_HOST, port=settings.SERVER_PORT)
 

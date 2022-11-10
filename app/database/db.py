@@ -2,9 +2,10 @@ import databases
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
+from app.schemas.schemas import settings
 
 
-DATABASE_URL = "postgresql://postgres:Rfvxfnrf1@localhost/medintDB"
+DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}/{settings.POSTGRES_DB}"
 
 database = databases.Database(DATABASE_URL)
 
