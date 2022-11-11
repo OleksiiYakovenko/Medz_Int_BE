@@ -3,8 +3,20 @@ import uvicorn
 from app.schemas.schemas import settings
 from starlette.middleware.cors import CORSMiddleware
 from app.routes.route import router
+from app.database.db import database
+
 
 app = FastAPI()
+
+
+@router.on_event("startup")
+async def startup():
+    await database.connect()
+
+
+@router.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 
 
 app.add_middleware(

@@ -13,16 +13,6 @@ def health_check():
     return {'Status': 'Working'}
 
 
-@router.on_event("startup")
-async def startup():
-    await database.connect()
-
-
-@router.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
-
-
 @router.get("/Users/", response_model=List[Users])
 async def read_user_table():
     query = Users.select()
