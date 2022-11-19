@@ -9,7 +9,7 @@ services:
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=db_meduz
+      - POSTGRES_DB=medintDB
     env_file: .env
   redis:
     image: redis
