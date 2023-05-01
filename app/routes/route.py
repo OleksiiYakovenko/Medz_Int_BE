@@ -1,11 +1,20 @@
-from fastapi import APIRouter
-from typing import List
-from app.models.models import Users
-from app.schemas.schemas import Users, UsersIn
-from app.database.db import database
+from fastapi import APIRouter, Depends, HTTPException
+from app.CRUD import crud
+from app.schemas import schemas
+from app.models import models
+from sqlalchemy.orm import Session
+from app.database.db import SessionLocal
 
 
-router = APIRouter(prefix='', tags=['Health'])
+router = APIRouter(prefix='', tags=[''])
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @router.get('/health-check')
@@ -13,15 +22,42 @@ def health_check():
     return {'Status': 'Working'}
 
 
-@router.get("/Users/", response_model=List[Users])
-async def read_user_table():
-    query = Users.select()
-    return await database.fetch_all(query)
+
+@router.post("/users/", response_model=schemas.User)
+def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
+    new_user = crud.get_user_by_email(db, email=user.email)
+    if new_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
 
 
-@router.post("/Users/", response_model=Users)
-async def create_user_in_table(Users: UsersIn):
-    query = Users.insert().values(text=Users.text, completed=Users.completed)
-    last_record_id = await database.execute(query)
-    return {**Users.dict(), "id": last_record_id}
+@router.get("/users/", response_model=list[schemas.User])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
 
+
+@router.get("/users/{user_id}", response_model=schemas.User)
+def read_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+
+@router.delete("/users/{user_id}")
+def delete_user(user_id, db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.user_id == user_id)
+    user.delete(synchronize_session=False)
+    db.commit()
+    return 'deleted'
+
+
+@router.put("/users/{user_id}")
+def update_user(user_id, request: schemas.User, db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.user_id == user_id)
+    if not user.first():
+        raise HTTPException(status_code=404)
+    user.update(request.dict(), synchronize_session=False)
+    db.commit()
+    return 'updated'

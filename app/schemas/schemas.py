@@ -19,60 +19,26 @@ class Settings(BaseSettings):
     SERVER_HOST: str
     SERVER_PORT: int
 
+
     class Env:
         env_file = '.env'
         env_file_encoding = 'utf-8'
 
 
+
 settings = Settings()
 
 
-class Users(BaseModel):
-    user_id: int
+class User(BaseModel):
     email: str
+
+    class Config:
+        orm_mode = True
+
+
+class CreateUser(User):
     password: str
-    user_name: str
-    user_bio: str
-    creation_date: str
 
 
-class UsersIn(BaseModel):
+class ActiveUser(User):
     user_id: int
-    email: str
-    password: str
-    user_name: str
-    user_bio: str
-    creation_date: str
-
-
-class SignIn(BaseModel):
-    pass
-
-
-class RequestModel(BaseModel):
-    pass
-
-
-class SignUp(BaseModel):
-    pass
-
-
-class RequestModel(BaseModel):
-    pass
-
-
-class UserUpdate(BaseModel):
-    pass
-
-
-class Request(BaseModel):
-    pass
-
-
-class Model(BaseModel):
-    pass
-
-
-class ListResponse(BaseModel):
-    pass
-
