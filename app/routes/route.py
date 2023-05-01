@@ -22,6 +22,7 @@ def health_check():
     return {'Status': 'Working'}
 
 
+
 @router.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
     new_user = crud.get_user_by_email(db, email=user.email)
@@ -60,4 +61,3 @@ def update_user(user_id, request: schemas.User, db: Session = Depends(get_db)):
     user.update(request.dict(), synchronize_session=False)
     db.commit()
     return 'updated'
-

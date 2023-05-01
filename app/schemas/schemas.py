@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     SERVER_PORT: int
 
 
+    class Env:
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
+
+
+
 settings = Settings()
 
 
@@ -36,5 +42,3 @@ class CreateUser(User):
 
 class ActiveUser(User):
     user_id: int
-
-
